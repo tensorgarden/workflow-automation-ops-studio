@@ -1,0 +1,126 @@
+import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, OpsSnapshot, StepRunResult, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
+
+export const demoMembers: WorkspaceMember[] = [
+  { id: "m_1", name: "Jordan Park", role: "admin", initials: "JP" },
+  { id: "m_2", name: "Nina Vasquez", role: "operator", initials: "NV" },
+  { id: "m_3", name: "Leo Tanaka", role: "operator", initials: "LT" }
+];
+
+export const demoConnectors: Connector[] = [
+  { id: "conn_gmail", name: "Gmail", type: "email", status: "healthy", lastSuccess: "2026-06-08T15:30:00Z", errorCount: 0, uptime: 99.8 },
+  { id: "conn_slack", name: "Slack", type: "messaging", status: "healthy", lastSuccess: "2026-06-08T15:28:00Z", errorCount: 1, uptime: 99.5 },
+  { id: "conn_crm", name: "HubSpot CRM", type: "crm", status: "degraded", lastSuccess: "2026-06-08T14:10:00Z", errorCount: 14, uptime: 94.2 },
+  { id: "conn_sheets", name: "Google Sheets", type: "spreadsheet", status: "healthy", lastSuccess: "2026-06-08T15:32:00Z", errorCount: 0, uptime: 100 },
+  { id: "conn_zapier", name: "Legacy Zapier Bridge", type: "integration", status: "down", lastSuccess: "2026-06-07T22:15:00Z", errorCount: 47, uptime: 67.3 }
+];
+
+export const demoWorkflows: WorkflowDefinition[] = [
+  {
+    id: "wf_lead_enrich", name: "Lead Enrichment Pipeline", description: "New CRM lead → AI research → enrichment fields → Slack notify sales",
+    stepCount: 5, connectorCount: 3, lastRun: "2026-06-08T15:30:00Z", successRate: 94,
+    steps: [
+      { id: "s1", type: "trigger", label: "CRM: New Lead Created", config: "Watch HubSpot for new contact with lifecycle_stage = 'lead'" },
+      { id: "s2", type: "ai_analyze", label: "AI: Research Company", config: "Look up company domain, headcount, industry, recent news" },
+      { id: "s3", type: "transform", label: "Transform: Score & Enrich", config: "Calculate lead score from signals. Map to enrichment fields." },
+      { id: "s4", type: "crm_upsert", label: "CRM: Update Lead Record", config: "Write enrichment fields back to HubSpot contact" },
+      { id: "s5", type: "outbound_slack", label: "Slack: Notify Sales", config: "Post to #sales-leads with summary and link to CRM record" }
+    ]
+  },
+  {
+    id: "wf_invoice_chase", name: "Overdue Invoice Follow-up", description: "Daily scan → filter overdue >30d → AI draft email → approval gate → send",
+    stepCount: 6, connectorCount: 3, lastRun: "2026-06-08T08:00:00Z", successRate: 87,
+    steps: [
+      { id: "s1", type: "trigger", label: "Sheets: Scan Invoice Tracker", config: "Read Google Sheet. Filter status = 'sent' AND days_overdue > 30" },
+      { id: "s2", type: "ai_generate", label: "AI: Draft Follow-up Email", config: "Generate polite but firm email with invoice #, amount, due date" },
+      { id: "s3", type: "approval_gate", label: "Approval: Review Draft", config: "Operator must review and approve/change/reject email draft" },
+      { id: "s4", type: "outbound_email", label: "Gmail: Send Follow-up", config: "Send via Gmail. BCC ops@ for audit trail." },
+      { id: "s5", type: "sheets_append", label: "Sheets: Log Follow-up", config: "Append row with date, invoice #, email sent status to tracker" },
+      { id: "s6", type: "outbound_slack", label: "Slack: Report to Ops", config: "Post summary to #ops-automation" }
+    ]
+  },
+  {
+    id: "wf_support_triage", name: "Support Ticket Triage", description: "New Zendesk ticket → AI classify urgency → route to team",
+    stepCount: 4, connectorCount: 3, lastRun: "2026-06-08T15:20:00Z", successRate: 96,
+    steps: [
+      { id: "s1", type: "trigger", label: "Trigger: New Ticket", config: "Zendesk webhook on ticket.created" },
+      { id: "s2", type: "ai_analyze", label: "AI: Classify & Route", config: "Classify urgency, sentiment, category. Determine target team." },
+      { id: "s3", type: "crm_upsert", label: "CRM: Update Customer", config: "Update support tier and last ticket date on customer record" },
+      { id: "s4", type: "outbound_slack", label: "Slack: Alert Team", config: "Post to target team channel with ticket summary" }
+    ]
+  }
+];
+
+const leadEnrichSteps: StepRunResult[] = [
+  { stepId: "s1", stepLabel: "CRM: New Lead Created", status: "success", input: "Trigger: HubSpot webhook — contact 48291 (\"DataVista Inc\")", output: "Lead extracted: DataVista Inc, domain datavista.io, 47 employees", duration: 0.3, retries: 0 },
+  { stepId: "s2", stepLabel: "AI: Research Company", status: "success", input: "Company: DataVista Inc, domain: datavista.io", output: "Industry: AI/ML infrastructure. Recent: raised $12M Series A (Mar 2026). Growth: 47→62 employees in 6 months.", duration: 2.1, retries: 0 },
+  { stepId: "s3", stepLabel: "Transform: Score & Enrich", status: "success", input: "Research data + CRM fields", output: "Lead score: 87/100 (high growth, recent funding, ICP match). Enriched fields: industry, headcount, funding_stage, recent_news_summary.", duration: 0.1, retries: 0 },
+  { stepId: "s4", stepLabel: "CRM: Update Lead Record", status: "success", input: "Enrichment fields for contact 48291", output: "HubSpot contact updated: 7 fields written. No conflicts.", duration: 0.8, retries: 0 },
+  { stepId: "s5", stepLabel: "Slack: Notify Sales", status: "success", input: "Lead summary for #sales-leads", output: "Message posted to #sales-leads. 3 sales reps mentioned.", duration: 0.4, retries: 0 }
+];
+
+export const demoActiveRun: WorkflowRun = {
+  id: "run_042", workflowId: "wf_lead_enrich", workflowName: "Lead Enrichment Pipeline",
+  status: "completed", startedAt: "2026-06-08T15:30:00Z", duration: 3.7,
+  stepResults: leadEnrichSteps, costEstimate: 0.12, costActual: 0.09
+};
+
+export const demoRunHistory: WorkflowRun[] = [
+  demoActiveRun,
+  {
+    id: "run_041", workflowId: "wf_invoice_chase", workflowName: "Overdue Invoice Follow-up",
+    status: "awaiting_approval", startedAt: "2026-06-08T08:00:00Z", duration: 0,
+    stepResults: [
+      { stepId: "s1", stepLabel: "Sheets: Scan Invoice Tracker", status: "success", input: "Sheet ID: inv_tracker_2026", output: "3 invoices >30 days overdue found. Total: $24,700", duration: 0.5, retries: 0 },
+      { stepId: "s2", stepLabel: "AI: Draft Follow-up Email", status: "success", input: "Invoice #INV-2847 ($8,200, 47 days overdue) — WestGate Partners", output: "Email draft: Subject \"Invoice INV-2847 — Payment Overdue\". Body: polite reminder with payment link.", duration: 1.8, retries: 0 }
+    ],
+    costEstimate: 0.15, costActual: 0.06
+  },
+  {
+    id: "run_040", workflowId: "wf_support_triage", workflowName: "Support Ticket Triage",
+    status: "failed", startedAt: "2026-06-08T15:20:00Z", duration: 1.2,
+    stepResults: [
+      { stepId: "s1", stepLabel: "Trigger: New Ticket", status: "success", input: "Webhook: ticket #T-5829 created", output: "Ticket: \"API returning 500 errors on /v2/export\" — customer: Acme Corp", duration: 0.2, retries: 0 },
+      { stepId: "s2", stepLabel: "AI: Classify & Route", status: "success", input: "Ticket: API 500 errors, Acme Corp", output: "Urgency: critical. Sentiment: frustrated. Category: API/infrastructure. Route to: engineering-oncall.", duration: 1.0, retries: 0 },
+      { stepId: "s3", stepLabel: "CRM: Update Customer", status: "failed", input: "Customer: Acme Corp, update support_tier", output: "", duration: 0, error: "HubSpot CRM API: 503 Service Unavailable after 3 retries (30s timeout each). Connector status downgraded to degraded.", retries: 3 },
+      { stepId: "s4", stepLabel: "Slack: Alert Team", status: "skipped", input: "Skipped — CRM step failed", output: "", duration: 0, retries: 0 }
+    ],
+    costEstimate: 0.08, costActual: 0.04
+  }
+];
+
+export const demoApprovals: ApprovalRequest[] = [
+  {
+    id: "app_001", runId: "run_041", workflowName: "Overdue Invoice Follow-up",
+    stepLabel: "AI: Draft Follow-up Email", action: "Send email to WestGate Partners re: INV-2847",
+    detail: "Subject: \"Invoice INV-2847 — Payment Overdue\"\nTo: billing@westgate-partners.com\nBody: [AI-generated draft — 3 paragraphs, polite but firm, includes payment link]\n\nInvoice: #INV-2847\nAmount: $8,200\nDue: 2026-04-22 (47 days overdue)\n\nThis email will be sent via Gmail and BCC'd to ops@.",
+    requestedAt: "2026-06-08T08:02:00Z"
+  }
+];
+
+export const demoAuditLog: AuditLogEntry[] = [
+  { id: "aud_001", runId: "run_042", action: "workflow_completed", detail: "Lead Enrichment Pipeline: DataVista Inc scored 87/100. Slack notification sent.", timestamp: "2026-06-08T15:30:04Z", cost: 0.09 },
+  { id: "aud_002", runId: "run_041", action: "approval_required", detail: "Overdue Invoice Follow-up: email draft for INV-2847 awaiting operator approval.", timestamp: "2026-06-08T08:02:00Z", cost: 0.06 },
+  { id: "aud_003", runId: "run_040", action: "connector_failure", detail: "Support Ticket Triage: CRM step failed — HubSpot 503. Workflow terminated. Connector downgraded.", timestamp: "2026-06-08T15:21:12Z", cost: 0.04 },
+  { id: "aud_004", runId: "run_039", action: "connector_health", detail: "Legacy Zapier Bridge: connector down for >12h (last success: 2026-06-07 22:15). 47 errors in last 30 days.", timestamp: "2026-06-08T10:00:00Z", cost: 0 },
+  { id: "aud_005", runId: "run_038", action: "workflow_completed", detail: "Support Ticket Triage: ticket #T-5828 routed to engineering-oncall. Slack alert sent.", timestamp: "2026-06-08T15:15:00Z", cost: 0.07 }
+];
+
+export const demoCostSummary: CostSummary = {
+  totalRuns: 42, totalCost: 3.47, budgetLimit: 20.00,
+  costByWorkflow: [
+    { name: "Lead Enrichment Pipeline", cost: 1.42, runs: 18 },
+    { name: "Overdue Invoice Follow-up", cost: 0.89, runs: 6 },
+    { name: "Support Ticket Triage", cost: 1.16, runs: 18 }
+  ]
+};
+
+export const demoSnapshot: OpsSnapshot = {
+  members: demoMembers,
+  connectors: demoConnectors,
+  workflows: demoWorkflows,
+  activeRun: demoActiveRun,
+  runHistory: demoRunHistory,
+  approvals: demoApprovals,
+  auditLog: demoAuditLog,
+  costSummary: demoCostSummary
+};
