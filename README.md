@@ -1,6 +1,6 @@
 # Workflow Automation Ops Studio
 
-Build, test, and monitor AI-powered workflow automations. Sandbox-test before production. Trace every step with input/output snapshots. See which integrations are healthy and which are silently failing. Human approval gates before any outbound action — no more "the automation sent 47 wrong emails."
+Build, test, and monitor AI-powered workflow automations. Sandbox-test before production. Trace every step with input/output snapshots. See which integrations are healthy and which are silently failing. Human approval gates before any outbound action. no more "the automation sent 47 wrong emails."
 
 This is a portfolio demonstration of production workflow automation patterns: sandbox testing, step-level execution traces, integration health monitoring, approval gates, retry policies, and cost tracking.
 
@@ -18,15 +18,15 @@ The most-cited frustration with workflow automation tools is silent failure. HN 
 
 This project addresses those failures directly:
 
-- **Sandbox testing** — run any workflow against synthetic data before deploying. See step outputs without triggering real outbound actions
-- **Step execution trace** — every step shows input, output, duration, status, and error details. Click any step to see what happened. No more "which step failed?" guessing
-- **Integration health dashboard** — all connectors (Gmail, Slack, CRM, Sheets, Zapier bridge) show status, last success, error count, and uptime %. Degraded and down connectors are flagged
-- **Approval gates** — any outbound action (email send, Slack post, CRM write) requires human approval. The approval queue shows exactly what will be sent before it goes out
-- **Cost tracking** — per-workflow cost with estimated vs. actual. Budget tracking across all runs
+- **Sandbox testing**: run any workflow against synthetic data before deploying. See step outputs without triggering real outbound actions
+- **Step execution trace**: every step shows input, output, duration, status, and error details. Click any step to see what happened. No more "which step failed?" guessing
+- **Integration health dashboard**: all connectors (Gmail, Slack, CRM, Sheets, Zapier bridge) show status, last success, error count, and uptime %. Degraded and down connectors are flagged
+- **Approval gates**: any outbound action (email send, Slack post, CRM write) requires human approval. The approval queue shows exactly what will be sent before it goes out
+- **Cost tracking**: per-workflow cost with estimated vs. actual. Budget tracking across all runs
 
-The demo models three workflows: lead enrichment, overdue invoice follow-up, and support ticket triage — with 5 connectors and real-feeling failure scenarios.
+The demo models three workflows: lead enrichment, overdue invoice follow-up, and support ticket triage. with 5 connectors and real-feeling failure scenarios.
 
-MEDIA:/home/hermes/workspace/upwork-demo-portfolio/workflow-automation-ops-studio/docs/screenshots/01-dashboard-hero.png
+![](docs/screenshots/01-dashboard-hero.png)
 
 *Above: the ops studio dashboard showing workflow definitions, integration health, and system stats.*
 
@@ -43,14 +43,14 @@ MEDIA:/home/hermes/workspace/upwork-demo-portfolio/workflow-automation-ops-studi
 
 ## Features
 
-- **Integration health dashboard** — 5 connectors with live status (healthy/degraded/down), last success timestamp, error counts, and uptime percentages
-- **Sandbox testing** — Run any workflow against mock data to see step outputs without triggering real outbound actions
-- **Step execution trace** — Every step shows input text, output text, duration, status (success/failed/skipped), retry count, and error details
-- **Approval gates** — Outbound actions (email, Slack, CRM writes) require human approval. Queue shows draft content before sending
-- **Workflow definitions** — 3 workflows with step cards showing the full pipeline (trigger → AI → transform → connector → outbound)
-- **Run cost tracking** — Per-workflow cost with estimated vs. actual. Monthly budget gauge
-- **Retry policies** — Failed steps show retry count and error reason (e.g., "HubSpot CRM API: 503 after 3 retries")
-- **Audit log** — Every action recorded with cost, timestamp, and detail
+- **Integration health dashboard**: 5 connectors with live status (healthy/degraded/down), last success timestamp, error counts, and uptime percentages
+- **Sandbox testing**: Run any workflow against mock data to see step outputs without triggering real outbound actions
+- **Step execution trace**: Every step shows input text, output text, duration, status (success/failed/skipped), retry count, and error details
+- **Approval gates**: Outbound actions (email, Slack, CRM writes) require human approval. Queue shows draft content before sending
+- **Workflow definitions**: 3 workflows with step cards showing the full pipeline (trigger → AI → transform → connector → outbound)
+- **Run cost tracking**: Per-workflow cost with estimated vs. actual. Monthly budget gauge
+- **Retry policies**: Failed steps show retry count and error reason (e.g., "HubSpot CRM API: 503 after 3 retries")
+- **Audit log**: Every action recorded with cost, timestamp, and detail
 
 ## Tech stack
 
@@ -59,9 +59,9 @@ MEDIA:/home/hermes/workspace/upwork-demo-portfolio/workflow-automation-ops-studi
 | Framework | Next.js App Router |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
-| Testing | Vitest — 8 tests covering connector health, workflow structure, execution traces, and cost tracking |
+| Testing | Vitest: 8 tests covering connector health, workflow structure, execution traces, and cost tracking |
 | CI | GitHub Actions |
-| Data | TypeScript fixture data — no real connectors, no API keys required |
+| Data | TypeScript fixture data, no real connectors, no API keys required |
 
 ## Architecture
 
@@ -71,7 +71,7 @@ src/app/page.tsx              ← Dashboard: integration health, workflow builde
   → src/lib/types.ts          ← Domain types: connectors, workflows, runs, steps, approvals, audit entries
 ```
 
-The dashboard renders from static fixture data. All connector statuses, workflow runs, step traces, and audit entries are pre-computed demo data — no real integrations, no network calls. This is intentional: the demo proves observability and governance patterns without infrastructure.
+The dashboard renders from static fixture data. All connector statuses, workflow runs, step traces, and audit entries are pre-computed demo data, no real integrations, no network calls. This is intentional: the demo proves observability and governance patterns without infrastructure.
 
 ## Quick start
 
@@ -87,7 +87,7 @@ Open `http://localhost:3000`.
 ```bash
 npm run lint        # ESLint with zero warnings
 npm run typecheck   # TypeScript strict mode
-npm test            # Vitest — 8 tests
+npm test            # Vitest. 8 tests
 npm run build       # Production build
 ```
 
@@ -97,7 +97,7 @@ All data is fictional and public-safe:
 
 - 5 connectors: Gmail (healthy), Slack (healthy), HubSpot CRM (degraded), Google Sheets (healthy), Legacy Zapier Bridge (down)
 - 3 workflows: Lead Enrichment Pipeline, Overdue Invoice Follow-up, Support Ticket Triage
-- 3 recent runs: completed (lead enrichment), awaiting approval (invoice follow-up), failed (support triage — CRM connector failure)
+- 3 recent runs: completed (lead enrichment), awaiting approval (invoice follow-up), failed (support triage. CRM connector failure)
 - 1 approval request with draft email content
 - 5 audit log entries with cost tracking
 
@@ -121,7 +121,7 @@ SCREENSHOT_URL=http://127.0.0.1:3110 node scripts/capture-screenshots.mjs
 
 - No real API keys, secrets, or credentials committed
 - All companies, people, and data are fictional
-- No network calls — all data is static fixture data
+- No network calls; all data is static fixture data
 - Approval gates are the default for outbound actions
 
 ---
