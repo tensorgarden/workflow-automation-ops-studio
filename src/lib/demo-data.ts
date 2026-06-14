@@ -1,4 +1,4 @@
-import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, OpsSnapshot, StepRunResult, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
+import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, OpsSnapshot, StepRunResult, WebhookRecoveryEvent, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
 
 export const demoMembers: WorkspaceMember[] = [
   { id: "m_1", name: "Jordan Park", role: "admin", initials: "JP" },
@@ -105,6 +105,27 @@ export const demoAuditLog: AuditLogEntry[] = [
   { id: "aud_005", runId: "run_038", action: "workflow_completed", detail: "Support Ticket Triage: ticket #T-5828 routed to engineering-oncall. Slack alert sent.", timestamp: "2026-06-08T15:15:00Z", cost: 0.07 }
 ];
 
+export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
+  {
+    id: "dlq_001", workflowId: "wf_support_triage", provider: "Zendesk",
+    receivedAt: "2026-06-08T15:20:05Z", traceId: "trc_ticket_5829",
+    idempotencyKey: "idem_zendesk_T-5829_crm_upsert_v1",
+    failureReason: "HubSpot CRM returned 503 after provider-aware exponential backoff.",
+    retryCount: 3, maxRetries: 3, status: "ready_for_replay",
+    deadLetteredAt: "2026-06-08T15:21:12Z", replaySafe: true,
+    operatorAction: "Replay the CRM upsert after HubSpot health is green; preserve the trace ID so ticket routing is not duplicated."
+  },
+  {
+    id: "dlq_002", workflowId: "wf_lead_enrich", provider: "HubSpot",
+    receivedAt: "2026-06-08T15:30:03Z", traceId: "trc_contact_48291",
+    idempotencyKey: "idem_hubspot_48291_enrichment_v1",
+    failureReason: "Provider retried after a slow acknowledgement, but the original contact update already succeeded.",
+    retryCount: 3, maxRetries: 3, status: "quarantined",
+    deadLetteredAt: "2026-06-08T15:30:48Z", replaySafe: false,
+    operatorAction: "Request duplicate-payload review before any replay; the idempotency key already maps to a completed CRM write."
+  }
+];
+
 export const demoCostSummary: CostSummary = {
   totalRuns: 42, totalCost: 3.47, budgetLimit: 20.00,
   costByWorkflow: [
@@ -122,5 +143,6 @@ export const demoSnapshot: OpsSnapshot = {
   runHistory: demoRunHistory,
   approvals: demoApprovals,
   auditLog: demoAuditLog,
+  webhookRecovery: demoWebhookRecovery,
   costSummary: demoCostSummary
 };

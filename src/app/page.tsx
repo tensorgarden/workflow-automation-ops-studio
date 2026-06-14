@@ -1,6 +1,6 @@
 import {
   demoActiveRun, demoApprovals, demoAuditLog, demoConnectors, demoCostSummary,
-  demoMembers, demoWorkflows
+  demoMembers, demoWebhookRecovery, demoWorkflows
 } from "@/lib/demo-data";
 import type { ConnectorStatus, RunStatus } from "@/lib/types";
 
@@ -40,6 +40,8 @@ export default function Home() {
   const healthyCount = demoConnectors.filter(c => c.status === "healthy").length;
   const downCount = demoConnectors.filter(c => c.status === "down").length;
   const pendingApprovals = demoApprovals.length;
+  const recoveryQueueCount = demoWebhookRecovery.filter(e => e.status !== "replayed").length;
+  const replayReadyCount = demoWebhookRecovery.filter(e => e.status === "ready_for_replay").length;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-8 md:px-8 lg:px-10 bg-slate-50">
@@ -63,6 +65,7 @@ export default function Home() {
             { label: "Healthy connectors", value: healthyCount, sub: `of ${demoConnectors.length}` },
             { label: "Connectors down", value: downCount, sub: "needs attention" },
             { label: "Pending approvals", value: pendingApprovals, sub: "awaiting human" },
+            { label: "Recovery queue", value: recoveryQueueCount, sub: "DLQ events" },
             { label: "Monthly cost", value: `$${demoCostSummary.totalCost.toFixed(2)}`, sub: `/${demoCostSummary.totalRuns} runs` }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -94,6 +97,29 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-slate-950">Webhook recovery queue</h3>
+              <Badge tone="purple">{replayReadyCount} replay-ready</Badge>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              Dead-lettered payloads keep trace IDs and idempotency keys so retries do not double-write CRM or ticket records.
+            </p>
+            <div className="mt-3 space-y-2">
+              {demoWebhookRecovery.map(event => (
+                <div key={event.id} className="rounded-xl bg-white p-3 text-xs text-slate-600">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-slate-900">{event.provider}</span>
+                    <span className="font-mono text-[10px] text-indigo-600">{event.traceId}</span>
+                  </div>
+                  <p className="mt-1">{event.failureReason}</p>
+                  <p className="mt-1 text-slate-400">
+                    {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for duplicate review"}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
 

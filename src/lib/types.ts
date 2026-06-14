@@ -1,5 +1,6 @@
 export type RunStatus = "queued" | "running" | "awaiting_approval" | "completed" | "failed";
 export type ConnectorStatus = "healthy" | "degraded" | "down";
+export type RecoveryStatus = "ready_for_replay" | "replayed" | "quarantined";
 export type StepType = "trigger" | "transform" | "ai_analyze" | "ai_generate" | "outbound_email" | "outbound_slack" | "crm_upsert" | "sheets_append" | "approval_gate";
 
 export interface WorkspaceMember {
@@ -41,6 +42,13 @@ export interface AuditLogEntry {
   id: string; runId: string; action: string; detail: string; timestamp: string; cost: number;
 }
 
+export interface WebhookRecoveryEvent {
+  id: string; workflowId: string; provider: string; receivedAt: string;
+  traceId: string; idempotencyKey: string; failureReason: string;
+  retryCount: number; maxRetries: number; status: RecoveryStatus;
+  deadLetteredAt: string; replaySafe: boolean; operatorAction: string;
+}
+
 export interface CostSummary {
   totalRuns: number; totalCost: number; budgetLimit: number;
   costByWorkflow: { name: string; cost: number; runs: number }[];
@@ -54,5 +62,6 @@ export interface OpsSnapshot {
   runHistory: WorkflowRun[];
   approvals: ApprovalRequest[];
   auditLog: AuditLogEntry[];
+  webhookRecovery: WebhookRecoveryEvent[];
   costSummary: CostSummary;
 }
