@@ -81,7 +81,7 @@ export const demoRunHistory: WorkflowRun[] = [
     stepResults: [
       { stepId: "s1", stepLabel: "Trigger: New Ticket", status: "success", input: "Webhook: ticket #T-5829 created", output: "Ticket: \"API returning 500 errors on /v2/export\" — customer: Acme Corp", duration: 0.2, retries: 0 },
       { stepId: "s2", stepLabel: "AI: Classify & Route", status: "success", input: "Ticket: API 500 errors, Acme Corp", output: "Urgency: critical. Sentiment: frustrated. Category: API/infrastructure. Route to: engineering-oncall.", duration: 1.0, retries: 0 },
-      { stepId: "s3", stepLabel: "CRM: Update Customer", status: "failed", input: "Customer: Acme Corp, update support_tier", output: "", duration: 0, error: "HubSpot CRM API: 503 Service Unavailable after 3 retries (30s timeout each). Connector status downgraded to degraded.", retries: 3 },
+      { stepId: "s3", stepLabel: "CRM: Update Customer", status: "failed", input: "Customer: Acme Corp, update support_tier", output: "", duration: 0, error: "HubSpot CRM API: 503 Service Unavailable after 3 retries (30s timeout each). Connector status downgraded to degraded.", retries: 3, errorCategory: "transient" },
       { stepId: "s4", stepLabel: "Slack: Alert Team", status: "skipped", input: "Skipped — CRM step failed", output: "", duration: 0, retries: 0 }
     ],
     costEstimate: 0.08, costActual: 0.04
@@ -113,7 +113,8 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     failureReason: "HubSpot CRM returned 503 after provider-aware exponential backoff.",
     retryCount: 3, maxRetries: 3, status: "ready_for_replay",
     deadLetteredAt: "2026-06-08T15:21:12Z", replaySafe: true,
-    operatorAction: "Replay the CRM upsert after HubSpot health is green; preserve the trace ID so ticket routing is not duplicated."
+    operatorAction: "Replay the CRM upsert after HubSpot health is green; preserve the trace ID so ticket routing is not duplicated.",
+    errorCategory: "transient"
   },
   {
     id: "dlq_002", workflowId: "wf_lead_enrich", provider: "HubSpot",
@@ -122,7 +123,8 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     failureReason: "Provider retried after a slow acknowledgement, but the original contact update already succeeded.",
     retryCount: 3, maxRetries: 3, status: "quarantined",
     deadLetteredAt: "2026-06-08T15:30:48Z", replaySafe: false,
-    operatorAction: "Request duplicate-payload review before any replay; the idempotency key already maps to a completed CRM write."
+    operatorAction: "Request duplicate-payload review before any replay; the idempotency key already maps to a completed CRM write.",
+    errorCategory: "permanent"
   }
 ];
 

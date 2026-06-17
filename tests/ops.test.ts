@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery } from "@/lib/demo-data";
+import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery, demoRunHistory } from "@/lib/demo-data";
 
 describe("connector health", () => {
   it("has healthy connectors", () => {
@@ -63,5 +63,34 @@ describe("webhook recovery safeguards", () => {
 
     expect(duplicateRisk.length).toBeGreaterThan(0);
     expect(duplicateRisk.every(event => event.status === "quarantined")).toBe(true);
+  });
+});
+
+describe("error classification", () => {
+  it("classifies transient webhook failures as replay-safe for automatic retry", () => {
+    const transient = demoWebhookRecovery.filter(e => e.errorCategory === "transient");
+    expect(transient.length).toBeGreaterThan(0);
+    expect(transient.every(e => e.replaySafe && e.status === "ready_for_replay")).toBe(true);
+  });
+
+  it("classifies permanent webhook failures as quarantined with no safe replay", () => {
+    const permanent = demoWebhookRecovery.filter(e => e.errorCategory === "permanent");
+    expect(permanent.length).toBeGreaterThan(0);
+    expect(permanent.every(e => !e.replaySafe && e.status === "quarantined")).toBe(true);
+  });
+
+  it("marks failed step results with an error category", () => {
+    const failedSteps = demoRunHistory.flatMap(r => r.stepResults.filter(s => s.status === "failed" && s.error));
+    expect(failedSteps.length).toBeGreaterThan(0);
+    expect(failedSteps.every(s => s.errorCategory === "transient")).toBe(true);
+    // Transient step failures should have exhausted retries
+    expect(failedSteps.every(s => s.retries >= 3)).toBe(true);
+  });
+
+  it("distinguishes transient from permanent errors in recovery queue", () => {
+    const categories = new Set(demoWebhookRecovery.map(e => e.errorCategory));
+    expect(categories.has("transient")).toBe(true);
+    expect(categories.has("permanent")).toBe(true);
+    expect(categories.size).toBeGreaterThanOrEqual(2);
   });
 });
