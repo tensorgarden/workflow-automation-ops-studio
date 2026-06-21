@@ -18,6 +18,7 @@ export const demoWorkflows: WorkflowDefinition[] = [
   {
     id: "wf_lead_enrich", name: "Lead Enrichment Pipeline", description: "New CRM lead → AI research → enrichment fields → Slack notify sales",
     stepCount: 5, connectorCount: 3, lastRun: "2026-06-08T15:30:00Z", successRate: 94,
+    dependsOnConnectorIds: ["conn_crm", "conn_slack"],
     steps: [
       { id: "s1", type: "trigger", label: "CRM: New Lead Created", config: "Watch HubSpot for new contact with lifecycle_stage = 'lead'" },
       { id: "s2", type: "ai_analyze", label: "AI: Research Company", config: "Look up company domain, headcount, industry, recent news" },
@@ -29,6 +30,7 @@ export const demoWorkflows: WorkflowDefinition[] = [
   {
     id: "wf_invoice_chase", name: "Overdue Invoice Follow-up", description: "Daily scan → filter overdue >30d → AI draft email → approval gate → send",
     stepCount: 6, connectorCount: 3, lastRun: "2026-06-08T08:00:00Z", successRate: 87,
+    dependsOnConnectorIds: ["conn_sheets", "conn_gmail", "conn_slack"],
     steps: [
       { id: "s1", type: "trigger", label: "Sheets: Scan Invoice Tracker", config: "Read Google Sheet. Filter status = 'sent' AND days_overdue > 30" },
       { id: "s2", type: "ai_generate", label: "AI: Draft Follow-up Email", config: "Generate polite but firm email with invoice #, amount, due date" },
@@ -41,6 +43,7 @@ export const demoWorkflows: WorkflowDefinition[] = [
   {
     id: "wf_support_triage", name: "Support Ticket Triage", description: "New Zendesk ticket → AI classify urgency → route to team",
     stepCount: 4, connectorCount: 3, lastRun: "2026-06-08T15:20:00Z", successRate: 96,
+    dependsOnConnectorIds: ["conn_crm", "conn_slack"],
     steps: [
       { id: "s1", type: "trigger", label: "Trigger: New Ticket", config: "Zendesk webhook on ticket.created" },
       { id: "s2", type: "ai_analyze", label: "AI: Classify & Route", config: "Classify urgency, sentiment, category. Determine target team." },

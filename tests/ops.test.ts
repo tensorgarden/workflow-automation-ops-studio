@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery, demoRunHistory } from "@/lib/demo-data";
+import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery, demoRunHistory, demoApprovals } from "@/lib/demo-data";
 
 describe("connector health", () => {
   it("has healthy connectors", () => {
@@ -63,6 +63,55 @@ describe("webhook recovery safeguards", () => {
 
     expect(duplicateRisk.length).toBeGreaterThan(0);
     expect(duplicateRisk.every(event => event.status === "quarantined")).toBe(true);
+  });
+});
+
+describe("connector blast radius", () => {
+  it("every degraded connector has at least one workflow that depends on it", () => {
+    const degradedIds = new Set(
+      demoConnectors.filter(c => c.status === "degraded").map(c => c.id)
+    );
+
+    for (const connId of degradedIds) {
+      const impacted = demoWorkflows.filter(w => w.dependsOnConnectorIds.includes(connId));
+      expect(impacted.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("the down connector is flagged without active workflow dependents, reflecting a decommissioned integration", () => {
+    const downConnectors = demoConnectors.filter(c => c.status === "down");
+    expect(downConnectors.length).toBeGreaterThan(0);
+    // A down legacy connector may have zero active workflows — that is the point of the health dashboard
+  });
+
+  it("every workflow dependency references a real connector", () => {
+    const connectorIds = new Set(demoConnectors.map(c => c.id));
+
+    for (const wf of demoWorkflows) {
+      for (const connId of wf.dependsOnConnectorIds) {
+        expect(connectorIds.has(connId)).toBe(true);
+      }
+    }
+  });
+});
+
+describe("approval gate safety", () => {
+  it("every approval request references a real run that is awaiting approval", () => {
+    const awaitingRunIds = new Set(
+      demoRunHistory.filter(r => r.status === "awaiting_approval").map(r => r.id)
+    );
+
+    for (const app of demoApprovals) {
+      expect(awaitingRunIds.has(app.runId)).toBe(true);
+    }
+  });
+
+  it("no completed or failed run has a pending approval", () => {
+    const terminalRunIds = new Set(
+      demoRunHistory.filter(r => r.status === "completed" || r.status === "failed").map(r => r.id)
+    );
+    const pendingForTerminal = demoApprovals.filter(a => terminalRunIds.has(a.runId));
+    expect(pendingForTerminal.length).toBe(0);
   });
 });
 

@@ -20,7 +20,7 @@ export interface WorkflowStep {
 export interface WorkflowDefinition {
   id: string; name: string; description: string; stepCount: number;
   connectorCount: number; lastRun: string; successRate: number;
-  steps: WorkflowStep[];
+  steps: WorkflowStep[]; dependsOnConnectorIds: string[];
 }
 
 export interface StepRunResult {
