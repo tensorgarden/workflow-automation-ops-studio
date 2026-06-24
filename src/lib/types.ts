@@ -1,5 +1,6 @@
 export type RunStatus = "queued" | "running" | "awaiting_approval" | "completed" | "failed";
 export type ConnectorStatus = "healthy" | "degraded" | "down";
+export type CredentialStatus = "valid" | "reauth_due" | "expired";
 export type ErrorCategory = "transient" | "permanent" | "unknown";
 export type RecoveryStatus = "ready_for_replay" | "replayed" | "quarantined";
 export type StepType = "trigger" | "transform" | "ai_analyze" | "ai_generate" | "outbound_email" | "outbound_slack" | "crm_upsert" | "sheets_append" | "approval_gate";
@@ -11,6 +12,12 @@ export interface WorkspaceMember {
 export interface Connector {
   id: string; name: string; type: string; status: ConnectorStatus;
   lastSuccess: string; errorCount: number; uptime: number;
+  auth: {
+    status: CredentialStatus;
+    checkedAt: string;
+    nextReviewAt: string;
+    operatorAction: string;
+  };
 }
 
 export interface WorkflowStep {

@@ -143,3 +143,22 @@ describe("error classification", () => {
     expect(categories.size).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe("credential reauthorization monitoring", () => {
+  it("flags connectors with credential risk for operator review", () => {
+    const needsReview = demoConnectors.filter(c => c.auth.status !== "valid");
+
+    expect(needsReview.length).toBeGreaterThan(0);
+    for (const connector of needsReview) {
+      expect(Number.isNaN(Date.parse(connector.auth.checkedAt))).toBe(false);
+      expect(Number.isNaN(Date.parse(connector.auth.nextReviewAt))).toBe(false);
+      expect(Date.parse(connector.auth.nextReviewAt)).toBeGreaterThanOrEqual(Date.parse(connector.auth.checkedAt));
+      expect(connector.auth.operatorAction).toMatch(/refresh|isolated|review|rotate/i);
+    }
+  });
+
+  it("does not mark healthy connectors with expired credentials", () => {
+    const healthyConnectors = demoConnectors.filter(c => c.status === "healthy");
+    expect(healthyConnectors.every(c => c.auth.status !== "expired")).toBe(true);
+  });
+});

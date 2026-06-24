@@ -7,11 +7,26 @@ export const demoMembers: WorkspaceMember[] = [
 ];
 
 export const demoConnectors: Connector[] = [
-  { id: "conn_gmail", name: "Gmail", type: "email", status: "healthy", lastSuccess: "2026-06-08T15:30:00Z", errorCount: 0, uptime: 99.8 },
-  { id: "conn_slack", name: "Slack", type: "messaging", status: "healthy", lastSuccess: "2026-06-08T15:28:00Z", errorCount: 1, uptime: 99.5 },
-  { id: "conn_crm", name: "HubSpot CRM", type: "crm", status: "degraded", lastSuccess: "2026-06-08T14:10:00Z", errorCount: 14, uptime: 94.2 },
-  { id: "conn_sheets", name: "Google Sheets", type: "spreadsheet", status: "healthy", lastSuccess: "2026-06-08T15:32:00Z", errorCount: 0, uptime: 100 },
-  { id: "conn_zapier", name: "Legacy Zapier Bridge", type: "integration", status: "down", lastSuccess: "2026-06-07T22:15:00Z", errorCount: 47, uptime: 67.3 }
+  {
+    id: "conn_gmail", name: "Gmail", type: "email", status: "healthy", lastSuccess: "2026-06-08T15:30:00Z", errorCount: 0, uptime: 99.8,
+    auth: { status: "valid", checkedAt: "2026-06-08T15:25:00Z", nextReviewAt: "2026-06-15T15:25:00Z", operatorAction: "No action needed; rotate service account key during the weekly credential review." }
+  },
+  {
+    id: "conn_slack", name: "Slack", type: "messaging", status: "healthy", lastSuccess: "2026-06-08T15:28:00Z", errorCount: 1, uptime: 99.5,
+    auth: { status: "valid", checkedAt: "2026-06-08T15:24:00Z", nextReviewAt: "2026-06-15T15:24:00Z", operatorAction: "No action needed; keep bot scope audit on the weekly review checklist." }
+  },
+  {
+    id: "conn_crm", name: "HubSpot CRM", type: "crm", status: "degraded", lastSuccess: "2026-06-08T14:10:00Z", errorCount: 14, uptime: 94.2,
+    auth: { status: "reauth_due", checkedAt: "2026-06-08T14:12:00Z", nextReviewAt: "2026-06-08T16:00:00Z", operatorAction: "Refresh OAuth grant before replaying CRM upserts; owner Nina Vasquez." }
+  },
+  {
+    id: "conn_sheets", name: "Google Sheets", type: "spreadsheet", status: "healthy", lastSuccess: "2026-06-08T15:32:00Z", errorCount: 0, uptime: 100,
+    auth: { status: "valid", checkedAt: "2026-06-08T15:22:00Z", nextReviewAt: "2026-06-15T15:22:00Z", operatorAction: "No action needed; monitor quota and key rotation in the weekly review." }
+  },
+  {
+    id: "conn_zapier", name: "Legacy Zapier Bridge", type: "integration", status: "down", lastSuccess: "2026-06-07T22:15:00Z", errorCount: 47, uptime: 67.3,
+    auth: { status: "expired", checkedAt: "2026-06-08T09:55:00Z", nextReviewAt: "2026-06-08T10:15:00Z", operatorAction: "Keep connector isolated until replacement workflow is live; do not replay queued payloads." }
+  }
 ];
 
 export const demoWorkflows: WorkflowDefinition[] = [

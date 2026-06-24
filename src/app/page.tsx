@@ -2,7 +2,7 @@ import {
   demoActiveRun, demoApprovals, demoAuditLog, demoConnectors, demoCostSummary,
   demoMembers, demoWebhookRecovery, demoWorkflows
 } from "@/lib/demo-data";
-import type { ConnectorStatus, RunStatus } from "@/lib/types";
+import type { ConnectorStatus, CredentialStatus, RunStatus } from "@/lib/types";
 
 function Badge({ children, tone = "slate" }: { children: React.ReactNode; tone?: string }) {
   const t: Record<string, string> = {
@@ -20,6 +20,15 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 function ConnectorDot({ status }: { status: ConnectorStatus }) {
   const c = { healthy: "bg-emerald-500", degraded: "bg-amber-500 animate-pulse", down: "bg-red-500" };
   return <span className={`inline-block h-2.5 w-2.5 rounded-full ${c[status]}`} />;
+}
+
+function CredentialBadge({ status }: { status: CredentialStatus }) {
+  const m: Record<CredentialStatus, { label: string; tone: string }> = {
+    valid: { label: "Auth valid", tone: "green" },
+    reauth_due: { label: "Reauth due", tone: "amber" },
+    expired: { label: "Auth expired", tone: "red" }
+  };
+  return <Badge tone={m[status].tone}>{m[status].label}</Badge>;
 }
 
 function RunStatusBadge({ status }: { status: RunStatus }) {
@@ -42,6 +51,7 @@ export default function Home() {
   const pendingApprovals = demoApprovals.length;
   const recoveryQueueCount = demoWebhookRecovery.filter(e => e.status !== "replayed").length;
   const replayReadyCount = demoWebhookRecovery.filter(e => e.status === "ready_for_replay").length;
+  const authReviewCount = demoConnectors.filter(c => c.auth.status !== "valid").length;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-8 md:px-8 lg:px-10 bg-slate-50">
@@ -66,6 +76,7 @@ export default function Home() {
             { label: "Connectors down", value: downCount, sub: "needs attention" },
             { label: "Pending approvals", value: pendingApprovals, sub: "awaiting human" },
             { label: "Recovery queue", value: recoveryQueueCount, sub: "DLQ events" },
+            { label: "Auth review", value: authReviewCount, sub: "credential risk" },
             { label: "Monthly cost", value: `$${demoCostSummary.totalCost.toFixed(2)}`, sub: `/${demoCostSummary.totalRuns} runs` }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -91,9 +102,11 @@ export default function Home() {
                     <p className="text-xs text-slate-400">{c.type}</p>
                   </div>
                 </div>
-                <div className="text-right text-xs">
+                <div className="space-y-1 text-right text-xs">
+                  <CredentialBadge status={c.auth.status} />
                   <p className="font-medium text-slate-600">{c.uptime}% uptime</p>
                   {c.errorCount > 0 && <p className="text-red-500">{c.errorCount} errors</p>}
+                  {c.auth.status !== "valid" && <p className="max-w-44 text-[10px] leading-4 text-amber-700">{c.auth.operatorAction}</p>}
                 </div>
               </div>
             ))}
