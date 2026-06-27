@@ -47,6 +47,7 @@ describe("webhook recovery safeguards", () => {
       expect(event.traceId).toMatch(/^trc_/);
       expect(event.idempotencyKey).toMatch(/^idem_/);
       expect(event.idempotencyKey.length).toBeGreaterThan(20);
+      expect(demoConnectors.some(c => c.id === event.connectorId)).toBe(true);
     }
   });
 
@@ -116,10 +117,16 @@ describe("approval gate safety", () => {
 });
 
 describe("error classification", () => {
-  it("classifies transient webhook failures as replay-safe for automatic retry", () => {
+  it("only marks transient webhook failures replay-ready when the credential gate is clear", () => {
     const transient = demoWebhookRecovery.filter(e => e.errorCategory === "transient");
     expect(transient.length).toBeGreaterThan(0);
-    expect(transient.every(e => e.replaySafe && e.status === "ready_for_replay")).toBe(true);
+
+    const replayReady = transient.filter(e => e.status === "ready_for_replay");
+    expect(replayReady.length).toBeGreaterThan(0);
+    expect(replayReady.every(e => e.replaySafe && e.credentialGate === "clear")).toBe(true);
+
+    const credentialBlocked = transient.filter(e => e.credentialGate !== "clear");
+    expect(credentialBlocked.every(e => !e.replaySafe && e.status === "quarantined")).toBe(true);
   });
 
   it("classifies permanent webhook failures as quarantined with no safe replay", () => {
@@ -160,5 +167,22 @@ describe("credential reauthorization monitoring", () => {
   it("does not mark healthy connectors with expired credentials", () => {
     const healthyConnectors = demoConnectors.filter(c => c.status === "healthy");
     expect(healthyConnectors.every(c => c.auth.status !== "expired")).toBe(true);
+  });
+
+  it("blocks dead-letter replay when the dependent connector needs reauthorization", () => {
+    const connectorsById = new Map(demoConnectors.map(c => [c.id, c]));
+
+    for (const event of demoWebhookRecovery) {
+      const connector = connectorsById.get(event.connectorId);
+      expect(connector).toBeDefined();
+
+      if (connector?.auth.status !== "valid") {
+        expect(event.credentialGate).not.toBe("clear");
+        expect(event.replaySafe).toBe(false);
+        expect(event.operatorAction).toMatch(/credential|OAuth|refresh|review|re-check/i);
+      } else {
+        expect(event.credentialGate).toBe("clear");
+      }
+    }
   });
 });

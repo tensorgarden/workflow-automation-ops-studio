@@ -128,7 +128,10 @@ export default function Home() {
                   </div>
                   <p className="mt-1">{event.failureReason}</p>
                   <p className="mt-1 text-slate-400">
-                    {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for duplicate review"}
+                    {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for credential review"}
+                  </p>
+                  <p className={`mt-1 font-semibold ${event.credentialGate === "clear" ? "text-emerald-600" : "text-amber-700"}`}>
+                    Credential gate: {event.credentialGate.replace(/_/g, " ")}
                   </p>
                 </div>
               ))}
