@@ -52,6 +52,7 @@ export default function Home() {
   const recoveryQueueCount = demoWebhookRecovery.filter(e => e.status !== "replayed").length;
   const replayReadyCount = demoWebhookRecovery.filter(e => e.status === "ready_for_replay").length;
   const authReviewCount = demoConnectors.filter(c => c.auth.status !== "valid").length;
+  const scopeDriftCount = demoConnectors.filter(c => c.auth.scopeReview.missingScopes.length > 0).length;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-8 md:px-8 lg:px-10 bg-slate-50">
@@ -76,7 +77,7 @@ export default function Home() {
             { label: "Connectors down", value: downCount, sub: "needs attention" },
             { label: "Pending approvals", value: pendingApprovals, sub: "awaiting human" },
             { label: "Recovery queue", value: recoveryQueueCount, sub: "DLQ events" },
-            { label: "Auth review", value: authReviewCount, sub: "credential risk" },
+            { label: "Auth review", value: authReviewCount, sub: `${scopeDriftCount} scope drift` },
             { label: "Monthly cost", value: `$${demoCostSummary.totalCost.toFixed(2)}`, sub: `/${demoCostSummary.totalRuns} runs` }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -107,6 +108,9 @@ export default function Home() {
                   <p className="font-medium text-slate-600">{c.uptime}% uptime</p>
                   {c.errorCount > 0 && <p className="text-red-500">{c.errorCount} errors</p>}
                   {c.auth.status !== "valid" && <p className="max-w-44 text-[10px] leading-4 text-amber-700">{c.auth.operatorAction}</p>}
+                  {c.auth.scopeReview.missingScopes.length > 0 && (
+                    <p className="max-w-44 text-[10px] leading-4 text-red-600">Missing scopes: {c.auth.scopeReview.missingScopes.join(", ")}</p>
+                  )}
                 </div>
               </div>
             ))}

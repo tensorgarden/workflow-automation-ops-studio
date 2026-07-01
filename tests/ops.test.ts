@@ -185,4 +185,31 @@ describe("credential reauthorization monitoring", () => {
       }
     }
   });
+
+  it("captures missing OAuth scopes as review evidence", () => {
+    const drifted = demoConnectors.filter(c => c.auth.scopeReview.missingScopes.length > 0);
+
+    expect(drifted.length).toBeGreaterThan(0);
+    for (const connector of drifted) {
+      expect(connector.auth.status).not.toBe("valid");
+      expect(connector.auth.scopeReview.evidence).toMatch(/scope|token|OAuth|grant/i);
+      expect(connector.auth.operatorAction).toMatch(/scope|refresh|review|isolated/i);
+      for (const scope of connector.auth.scopeReview.missingScopes) {
+        expect(connector.auth.scopeReview.expectedScopes).toContain(scope);
+        expect(connector.auth.scopeReview.observedScopes).not.toContain(scope);
+      }
+    }
+  });
+
+  it("keeps valid connector scopes complete", () => {
+    const validConnectors = demoConnectors.filter(c => c.auth.status === "valid");
+
+    expect(validConnectors.length).toBeGreaterThan(0);
+    for (const connector of validConnectors) {
+      expect(connector.auth.scopeReview.missingScopes).toHaveLength(0);
+      for (const scope of connector.auth.scopeReview.expectedScopes) {
+        expect(connector.auth.scopeReview.observedScopes).toContain(scope);
+      }
+    }
+  });
 });

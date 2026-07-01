@@ -18,6 +18,12 @@ export interface Connector {
     checkedAt: string;
     nextReviewAt: string;
     operatorAction: string;
+    scopeReview: {
+      expectedScopes: string[];
+      observedScopes: string[];
+      missingScopes: string[];
+      evidence: string;
+    };
   };
 }
 

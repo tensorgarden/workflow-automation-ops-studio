@@ -9,23 +9,58 @@ export const demoMembers: WorkspaceMember[] = [
 export const demoConnectors: Connector[] = [
   {
     id: "conn_gmail", name: "Gmail", type: "email", status: "healthy", lastSuccess: "2026-06-08T15:30:00Z", errorCount: 0, uptime: 99.8,
-    auth: { status: "valid", checkedAt: "2026-06-08T15:25:00Z", nextReviewAt: "2026-06-15T15:25:00Z", operatorAction: "No action needed; rotate service account key during the weekly credential review." }
+    auth: {
+      status: "valid", checkedAt: "2026-06-08T15:25:00Z", nextReviewAt: "2026-06-15T15:25:00Z",
+      operatorAction: "No action needed; rotate service account key during the weekly credential review.",
+      scopeReview: {
+        expectedScopes: ["gmail.send", "gmail.modify"], observedScopes: ["gmail.send", "gmail.modify"], missingScopes: [],
+        evidence: "OAuth token introspection returned the expected Gmail send and modify scopes."
+      }
+    }
   },
   {
     id: "conn_slack", name: "Slack", type: "messaging", status: "healthy", lastSuccess: "2026-06-08T15:28:00Z", errorCount: 1, uptime: 99.5,
-    auth: { status: "valid", checkedAt: "2026-06-08T15:24:00Z", nextReviewAt: "2026-06-15T15:24:00Z", operatorAction: "No action needed; keep bot scope audit on the weekly review checklist." }
+    auth: {
+      status: "valid", checkedAt: "2026-06-08T15:24:00Z", nextReviewAt: "2026-06-15T15:24:00Z",
+      operatorAction: "No action needed; keep bot scope audit on the weekly review checklist.",
+      scopeReview: {
+        expectedScopes: ["chat:write", "channels:read"], observedScopes: ["chat:write", "channels:read"], missingScopes: [],
+        evidence: "Slack auth.test confirmed bot access and the expected channel read scope."
+      }
+    }
   },
   {
     id: "conn_crm", name: "HubSpot CRM", type: "crm", status: "degraded", lastSuccess: "2026-06-08T14:10:00Z", errorCount: 14, uptime: 94.2,
-    auth: { status: "reauth_due", checkedAt: "2026-06-08T14:12:00Z", nextReviewAt: "2026-06-08T16:00:00Z", operatorAction: "Refresh OAuth grant before replaying CRM upserts; owner Nina Vasquez." }
+    auth: {
+      status: "reauth_due", checkedAt: "2026-06-08T14:12:00Z", nextReviewAt: "2026-06-08T16:00:00Z",
+      operatorAction: "Refresh OAuth grant and review the missing CRM write scope before replaying upserts; owner Nina Vasquez.",
+      scopeReview: {
+        expectedScopes: ["crm.objects.contacts.read", "crm.objects.contacts.write"], observedScopes: ["crm.objects.contacts.read"], missingScopes: ["crm.objects.contacts.write"],
+        evidence: "HubSpot token introspection still reads contacts but no longer grants contact write permission."
+      }
+    }
   },
   {
     id: "conn_sheets", name: "Google Sheets", type: "spreadsheet", status: "healthy", lastSuccess: "2026-06-08T15:32:00Z", errorCount: 0, uptime: 100,
-    auth: { status: "valid", checkedAt: "2026-06-08T15:22:00Z", nextReviewAt: "2026-06-15T15:22:00Z", operatorAction: "No action needed; monitor quota and key rotation in the weekly review." }
+    auth: {
+      status: "valid", checkedAt: "2026-06-08T15:22:00Z", nextReviewAt: "2026-06-15T15:22:00Z",
+      operatorAction: "No action needed; monitor quota and key rotation in the weekly review.",
+      scopeReview: {
+        expectedScopes: ["spreadsheets.readonly", "spreadsheets.values.append"], observedScopes: ["spreadsheets.readonly", "spreadsheets.values.append"], missingScopes: [],
+        evidence: "Google tokeninfo confirms Sheets read and append scopes remain active."
+      }
+    }
   },
   {
     id: "conn_zapier", name: "Legacy Zapier Bridge", type: "integration", status: "down", lastSuccess: "2026-06-07T22:15:00Z", errorCount: 47, uptime: 67.3,
-    auth: { status: "expired", checkedAt: "2026-06-08T09:55:00Z", nextReviewAt: "2026-06-08T10:15:00Z", operatorAction: "Keep connector isolated until replacement workflow is live; do not replay queued payloads." }
+    auth: {
+      status: "expired", checkedAt: "2026-06-08T09:55:00Z", nextReviewAt: "2026-06-08T10:15:00Z",
+      operatorAction: "Keep connector isolated and review missing legacy webhook scopes until the replacement workflow is live; do not replay queued payloads.",
+      scopeReview: {
+        expectedScopes: ["legacy.webhook.manage", "legacy.workflow.execute"], observedScopes: [], missingScopes: ["legacy.webhook.manage", "legacy.workflow.execute"],
+        evidence: "Legacy bridge OAuth token endpoint returns invalid_grant, so no required webhook scopes are observable."
+      }
+    }
   }
 ];
 
