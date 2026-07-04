@@ -62,6 +62,7 @@ export interface WebhookRecoveryEvent {
   traceId: string; idempotencyKey: string; failureReason: string;
   retryCount: number; maxRetries: number; status: RecoveryStatus;
   deadLetteredAt: string; replaySafe: boolean; operatorAction: string;
+  duplicateAttemptCount: number; dedupeWindowExpiresAt: string;
   errorCategory: ErrorCategory; credentialGate: CredentialGateStatus;
 }
 

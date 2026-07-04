@@ -167,6 +167,7 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     retryCount: 3, maxRetries: 3, status: "quarantined",
     deadLetteredAt: "2026-06-08T15:21:12Z", replaySafe: false,
     operatorAction: "Refresh the HubSpot OAuth grant before any replay; then re-check the credential gate and preserve the trace ID.",
+    duplicateAttemptCount: 2, dedupeWindowExpiresAt: "2026-06-08T16:21:12Z",
     errorCategory: "transient", credentialGate: "reauth_required"
   },
   {
@@ -177,6 +178,7 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     retryCount: 3, maxRetries: 3, status: "quarantined",
     deadLetteredAt: "2026-06-08T15:30:48Z", replaySafe: false,
     operatorAction: "Request duplicate-payload review and confirm the HubSpot credential gate is clear before any manual replay.",
+    duplicateAttemptCount: 3, dedupeWindowExpiresAt: "2026-06-08T16:30:48Z",
     errorCategory: "permanent", credentialGate: "reauth_required"
   },
   {
@@ -187,6 +189,7 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     retryCount: 3, maxRetries: 3, status: "ready_for_replay",
     deadLetteredAt: "2026-06-08T15:32:10Z", replaySafe: true,
     operatorAction: "Replay after the rate-limit window resets; Slack credential gate is clear and trace ID prevents duplicate alerts.",
+    duplicateAttemptCount: 0, dedupeWindowExpiresAt: "2026-06-08T16:32:10Z",
     errorCategory: "transient", credentialGate: "clear"
   }
 ];

@@ -134,6 +134,9 @@ export default function Home() {
                   <p className="mt-1 text-slate-400">
                     {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for credential review"}
                   </p>
+                  <p className="mt-1 text-slate-400">
+                    {event.duplicateAttemptCount} duplicate attempt{event.duplicateAttemptCount === 1 ? "" : "s"} blocked · dedupe TTL {new Date(event.dedupeWindowExpiresAt).toLocaleTimeString()}
+                  </p>
                   <p className={`mt-1 font-semibold ${event.credentialGate === "clear" ? "text-emerald-600" : "text-amber-700"}`}>
                     Credential gate: {event.credentialGate.replace(/_/g, " ")}
                   </p>

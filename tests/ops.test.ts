@@ -65,6 +65,18 @@ describe("webhook recovery safeguards", () => {
     expect(duplicateRisk.length).toBeGreaterThan(0);
     expect(duplicateRisk.every(event => event.status === "quarantined")).toBe(true);
   });
+
+  it("retains idempotency windows while duplicate webhook attempts are reviewed", () => {
+    const eventsWithDuplicates = demoWebhookRecovery.filter(event => event.duplicateAttemptCount > 0);
+
+    expect(eventsWithDuplicates.length).toBeGreaterThan(0);
+    for (const event of demoWebhookRecovery) {
+      expect(Number.isNaN(Date.parse(event.dedupeWindowExpiresAt))).toBe(false);
+      expect(Date.parse(event.dedupeWindowExpiresAt)).toBeGreaterThan(Date.parse(event.deadLetteredAt));
+    }
+
+    expect(eventsWithDuplicates.every(event => event.status === "quarantined" && !event.replaySafe)).toBe(true);
+  });
 });
 
 describe("connector blast radius", () => {
