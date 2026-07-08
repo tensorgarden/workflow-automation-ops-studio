@@ -11,6 +11,7 @@ export const demoConnectors: Connector[] = [
     id: "conn_gmail", name: "Gmail", type: "email", status: "healthy", lastSuccess: "2026-06-08T15:30:00Z", errorCount: 0, uptime: 99.8,
     auth: {
       status: "valid", checkedAt: "2026-06-08T15:25:00Z", nextReviewAt: "2026-06-15T15:25:00Z",
+      expiresAt: "2026-07-08T15:25:00Z", renewalWindowHours: 72,
       operatorAction: "No action needed; rotate service account key during the weekly credential review.",
       scopeReview: {
         expectedScopes: ["gmail.send", "gmail.modify"], observedScopes: ["gmail.send", "gmail.modify"], missingScopes: [],
@@ -22,6 +23,7 @@ export const demoConnectors: Connector[] = [
     id: "conn_slack", name: "Slack", type: "messaging", status: "healthy", lastSuccess: "2026-06-08T15:28:00Z", errorCount: 1, uptime: 99.5,
     auth: {
       status: "valid", checkedAt: "2026-06-08T15:24:00Z", nextReviewAt: "2026-06-15T15:24:00Z",
+      expiresAt: "2026-07-08T15:24:00Z", renewalWindowHours: 72,
       operatorAction: "No action needed; keep bot scope audit on the weekly review checklist.",
       scopeReview: {
         expectedScopes: ["chat:write", "channels:read"], observedScopes: ["chat:write", "channels:read"], missingScopes: [],
@@ -33,6 +35,7 @@ export const demoConnectors: Connector[] = [
     id: "conn_crm", name: "HubSpot CRM", type: "crm", status: "degraded", lastSuccess: "2026-06-08T14:10:00Z", errorCount: 14, uptime: 94.2,
     auth: {
       status: "reauth_due", checkedAt: "2026-06-08T14:12:00Z", nextReviewAt: "2026-06-08T16:00:00Z",
+      expiresAt: "2026-06-08T18:00:00Z", renewalWindowHours: 4,
       operatorAction: "Refresh OAuth grant and review the missing CRM write scope before replaying upserts; owner Nina Vasquez.",
       scopeReview: {
         expectedScopes: ["crm.objects.contacts.read", "crm.objects.contacts.write"], observedScopes: ["crm.objects.contacts.read"], missingScopes: ["crm.objects.contacts.write"],
@@ -44,6 +47,7 @@ export const demoConnectors: Connector[] = [
     id: "conn_sheets", name: "Google Sheets", type: "spreadsheet", status: "healthy", lastSuccess: "2026-06-08T15:32:00Z", errorCount: 0, uptime: 100,
     auth: {
       status: "valid", checkedAt: "2026-06-08T15:22:00Z", nextReviewAt: "2026-06-15T15:22:00Z",
+      expiresAt: "2026-07-08T15:22:00Z", renewalWindowHours: 72,
       operatorAction: "No action needed; monitor quota and key rotation in the weekly review.",
       scopeReview: {
         expectedScopes: ["spreadsheets.readonly", "spreadsheets.values.append"], observedScopes: ["spreadsheets.readonly", "spreadsheets.values.append"], missingScopes: [],
@@ -55,6 +59,7 @@ export const demoConnectors: Connector[] = [
     id: "conn_zapier", name: "Legacy Zapier Bridge", type: "integration", status: "down", lastSuccess: "2026-06-07T22:15:00Z", errorCount: 47, uptime: 67.3,
     auth: {
       status: "expired", checkedAt: "2026-06-08T09:55:00Z", nextReviewAt: "2026-06-08T10:15:00Z",
+      expiresAt: "2026-06-07T22:00:00Z", renewalWindowHours: 24,
       operatorAction: "Keep connector isolated and review missing legacy webhook scopes until the replacement workflow is live; do not replay queued payloads.",
       scopeReview: {
         expectedScopes: ["legacy.webhook.manage", "legacy.workflow.execute"], observedScopes: [], missingScopes: ["legacy.webhook.manage", "legacy.workflow.execute"],

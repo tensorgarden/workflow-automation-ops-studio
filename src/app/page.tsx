@@ -31,6 +31,11 @@ function CredentialBadge({ status }: { status: CredentialStatus }) {
   return <Badge tone={m[status].tone}>{m[status].label}</Badge>;
 }
 
+function formatIsoMinute(value: string) {
+  const [date, time = ""] = value.split("T");
+  return `${date} ${time.slice(0, 5)} UTC`;
+}
+
 function RunStatusBadge({ status }: { status: RunStatus }) {
   const m: Record<RunStatus, { label: string; tone: string }> = {
     queued: { label: "Queued", tone: "slate" }, running: { label: "Running", tone: "purple" },
@@ -53,6 +58,10 @@ export default function Home() {
   const replayReadyCount = demoWebhookRecovery.filter(e => e.status === "ready_for_replay").length;
   const authReviewCount = demoConnectors.filter(c => c.auth.status !== "valid").length;
   const scopeDriftCount = demoConnectors.filter(c => c.auth.scopeReview.missingScopes.length > 0).length;
+  const expiryWindowCount = demoConnectors.filter(c => {
+    const hoursUntilExpiry = (Date.parse(c.auth.expiresAt) - Date.parse(c.auth.checkedAt)) / (60 * 60 * 1000);
+    return c.auth.status !== "expired" && hoursUntilExpiry <= c.auth.renewalWindowHours;
+  }).length;
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-8 md:px-8 lg:px-10 bg-slate-50">
@@ -77,7 +86,7 @@ export default function Home() {
             { label: "Connectors down", value: downCount, sub: "needs attention" },
             { label: "Pending approvals", value: pendingApprovals, sub: "awaiting human" },
             { label: "Recovery queue", value: recoveryQueueCount, sub: "DLQ events" },
-            { label: "Auth review", value: authReviewCount, sub: `${scopeDriftCount} scope drift` },
+            { label: "Auth review", value: authReviewCount, sub: `${scopeDriftCount} scope drift · ${expiryWindowCount} expiring` },
             { label: "Monthly cost", value: `$${demoCostSummary.totalCost.toFixed(2)}`, sub: `/${demoCostSummary.totalRuns} runs` }
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-slate-950 p-4 text-white">
@@ -106,6 +115,7 @@ export default function Home() {
                 <div className="space-y-1 text-right text-xs">
                   <CredentialBadge status={c.auth.status} />
                   <p className="font-medium text-slate-600">{c.uptime}% uptime</p>
+                  <p className="text-slate-500">Expires {formatIsoMinute(c.auth.expiresAt)} · renew {c.auth.renewalWindowHours}h before</p>
                   {c.errorCount > 0 && <p className="text-red-500">{c.errorCount} errors</p>}
                   {c.auth.status !== "valid" && <p className="max-w-44 text-[10px] leading-4 text-amber-700">{c.auth.operatorAction}</p>}
                   {c.auth.scopeReview.missingScopes.length > 0 && (

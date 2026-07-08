@@ -17,6 +17,8 @@ export interface Connector {
     status: CredentialStatus;
     checkedAt: string;
     nextReviewAt: string;
+    expiresAt: string;
+    renewalWindowHours: number;
     operatorAction: string;
     scopeReview: {
       expectedScopes: string[];

@@ -181,6 +181,30 @@ describe("credential reauthorization monitoring", () => {
     expect(healthyConnectors.every(c => c.auth.status !== "expired")).toBe(true);
   });
 
+  it("tracks OAuth token expiry windows before workflow lockout", () => {
+    for (const connector of demoConnectors) {
+      const checkedAt = Date.parse(connector.auth.checkedAt);
+      const nextReviewAt = Date.parse(connector.auth.nextReviewAt);
+      const expiresAt = Date.parse(connector.auth.expiresAt);
+
+      expect(Number.isNaN(expiresAt)).toBe(false);
+      expect(connector.auth.renewalWindowHours).toBeGreaterThan(0);
+
+      if (connector.auth.status === "expired") {
+        expect(expiresAt).toBeLessThanOrEqual(checkedAt);
+      } else {
+        expect(expiresAt).toBeGreaterThan(checkedAt);
+      }
+
+      if (connector.auth.status === "reauth_due") {
+        const hoursBetweenReviewAndExpiry = (expiresAt - nextReviewAt) / (60 * 60 * 1000);
+        expect(hoursBetweenReviewAndExpiry).toBeGreaterThanOrEqual(0);
+        expect(hoursBetweenReviewAndExpiry).toBeLessThanOrEqual(connector.auth.renewalWindowHours);
+        expect(connector.auth.operatorAction).toMatch(/refresh|reauth|OAuth|scope/i);
+      }
+    }
+  });
+
   it("blocks dead-letter replay when the dependent connector needs reauthorization", () => {
     const connectorsById = new Map(demoConnectors.map(c => [c.id, c]));
 
