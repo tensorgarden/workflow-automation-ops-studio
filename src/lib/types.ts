@@ -2,6 +2,7 @@ export type RunStatus = "queued" | "running" | "awaiting_approval" | "completed"
 export type ConnectorStatus = "healthy" | "degraded" | "down";
 export type CredentialStatus = "valid" | "reauth_due" | "expired";
 export type CredentialGateStatus = "clear" | "reauth_required" | "expired_blocked";
+export type WebhookSignatureStatus = "verified" | "invalid" | "stale_timestamp";
 export type ErrorCategory = "transient" | "permanent" | "unknown";
 export type RecoveryStatus = "ready_for_replay" | "replayed" | "quarantined";
 export type StepType = "trigger" | "transform" | "ai_analyze" | "ai_generate" | "outbound_email" | "outbound_slack" | "crm_upsert" | "sheets_append" | "approval_gate";
@@ -66,6 +67,10 @@ export interface WebhookRecoveryEvent {
   deadLetteredAt: string; replaySafe: boolean; operatorAction: string;
   duplicateAttemptCount: number; dedupeWindowExpiresAt: string;
   errorCategory: ErrorCategory; credentialGate: CredentialGateStatus;
+  signatureVerification: {
+    status: WebhookSignatureStatus; signedAt: string; checkedAt: string;
+    toleranceSeconds: number; evidence: string;
+  };
 }
 
 export interface CostSummary {

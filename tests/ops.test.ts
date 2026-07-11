@@ -77,6 +77,31 @@ describe("webhook recovery safeguards", () => {
 
     expect(eventsWithDuplicates.every(event => event.status === "quarantined" && !event.replaySafe)).toBe(true);
   });
+
+  it("checks signed webhook timestamps before allowing replay", () => {
+    for (const event of demoWebhookRecovery) {
+      const signedAt = Date.parse(event.signatureVerification.signedAt);
+      const checkedAt = Date.parse(event.signatureVerification.checkedAt);
+      const ageSeconds = (checkedAt - signedAt) / 1000;
+
+      expect(Number.isNaN(signedAt)).toBe(false);
+      expect(Number.isNaN(checkedAt)).toBe(false);
+      expect(ageSeconds).toBeGreaterThanOrEqual(0);
+      expect(event.signatureVerification.toleranceSeconds).toBeGreaterThan(0);
+
+      if (event.signatureVerification.status === "verified") {
+        expect(ageSeconds).toBeLessThanOrEqual(event.signatureVerification.toleranceSeconds);
+      }
+    }
+  });
+
+  it("quarantines webhook deliveries that fail the signature gate", () => {
+    const blocked = demoWebhookRecovery.filter(event => event.signatureVerification.status !== "verified");
+
+    expect(blocked.length).toBeGreaterThan(0);
+    expect(blocked.every(event => event.status === "quarantined" && !event.replaySafe)).toBe(true);
+    expect(blocked.every(event => event.operatorAction.match(/signature|timestamp|signed/i))).toBe(true);
+  });
 });
 
 describe("connector blast radius", () => {

@@ -131,7 +131,7 @@ export default function Home() {
               <Badge tone="purple">{replayReadyCount} replay-ready</Badge>
             </div>
             <p className="mt-1 text-xs leading-5 text-slate-600">
-              Dead-lettered payloads keep trace IDs and idempotency keys so retries do not double-write CRM or ticket records.
+              Dead-lettered payloads keep trace IDs, idempotency keys, and signature evidence so forged or stale deliveries cannot be replayed.
             </p>
             <div className="mt-3 space-y-2">
               {demoWebhookRecovery.map(event => (
@@ -142,13 +142,16 @@ export default function Home() {
                   </div>
                   <p className="mt-1">{event.failureReason}</p>
                   <p className="mt-1 text-slate-400">
-                    {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for credential review"}
+                    {event.retryCount}/{event.maxRetries} retries · {event.status.replace(/_/g, " ")} · {event.replaySafe ? "safe replay" : "hold for review"}
                   </p>
                   <p className="mt-1 text-slate-400">
                     {event.duplicateAttemptCount} duplicate attempt{event.duplicateAttemptCount === 1 ? "" : "s"} blocked · dedupe TTL {new Date(event.dedupeWindowExpiresAt).toLocaleTimeString()}
                   </p>
                   <p className={`mt-1 font-semibold ${event.credentialGate === "clear" ? "text-emerald-600" : "text-amber-700"}`}>
                     Credential gate: {event.credentialGate.replace(/_/g, " ")}
+                  </p>
+                  <p className={`mt-1 font-semibold ${event.signatureVerification.status === "verified" ? "text-emerald-600" : "text-red-600"}`}>
+                    Signature gate: {event.signatureVerification.status.replace(/_/g, " ")} · {event.signatureVerification.toleranceSeconds}s tolerance
                   </p>
                 </div>
               ))}

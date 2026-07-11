@@ -173,7 +173,11 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     deadLetteredAt: "2026-06-08T15:21:12Z", replaySafe: false,
     operatorAction: "Refresh the HubSpot OAuth grant before any replay; then re-check the credential gate and preserve the trace ID.",
     duplicateAttemptCount: 2, dedupeWindowExpiresAt: "2026-06-08T16:21:12Z",
-    errorCategory: "transient", credentialGate: "reauth_required"
+    errorCategory: "transient", credentialGate: "reauth_required",
+    signatureVerification: {
+      status: "verified", signedAt: "2026-06-08T15:20:02Z", checkedAt: "2026-06-08T15:20:05Z",
+      toleranceSeconds: 300, evidence: "Zendesk HMAC signature matched the endpoint secret before the payload entered the recovery queue."
+    }
   },
   {
     id: "dlq_002", workflowId: "wf_lead_enrich", provider: "HubSpot", connectorId: "conn_crm",
@@ -182,9 +186,13 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     failureReason: "Provider retried after a slow acknowledgement, but the original contact update already succeeded.",
     retryCount: 3, maxRetries: 3, status: "quarantined",
     deadLetteredAt: "2026-06-08T15:30:48Z", replaySafe: false,
-    operatorAction: "Request duplicate-payload review and confirm the HubSpot credential gate is clear before any manual replay.",
+    operatorAction: "Reject the stale webhook timestamp, request a fresh signed delivery, and re-check credentials before any manual replay.",
     duplicateAttemptCount: 3, dedupeWindowExpiresAt: "2026-06-08T16:30:48Z",
-    errorCategory: "permanent", credentialGate: "reauth_required"
+    errorCategory: "permanent", credentialGate: "reauth_required",
+    signatureVerification: {
+      status: "stale_timestamp", signedAt: "2026-06-08T15:19:50Z", checkedAt: "2026-06-08T15:30:03Z",
+      toleranceSeconds: 300, evidence: "The HMAC matched, but the signed timestamp was outside the five-minute replay-attack tolerance."
+    }
   },
   {
     id: "dlq_003", workflowId: "wf_lead_enrich", provider: "Slack", connectorId: "conn_slack",
@@ -195,7 +203,11 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     deadLetteredAt: "2026-06-08T15:32:10Z", replaySafe: true,
     operatorAction: "Replay after the rate-limit window resets; Slack credential gate is clear and trace ID prevents duplicate alerts.",
     duplicateAttemptCount: 0, dedupeWindowExpiresAt: "2026-06-08T16:32:10Z",
-    errorCategory: "transient", credentialGate: "clear"
+    errorCategory: "transient", credentialGate: "clear",
+    signatureVerification: {
+      status: "verified", signedAt: "2026-06-08T15:30:01Z", checkedAt: "2026-06-08T15:30:04Z",
+      toleranceSeconds: 300, evidence: "Slack signing-secret verification passed within the accepted timestamp tolerance."
+    }
   }
 ];
 
