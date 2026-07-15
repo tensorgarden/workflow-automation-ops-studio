@@ -153,6 +153,11 @@ export default function Home() {
                   <p className={`mt-1 font-semibold ${event.signatureVerification.status === "verified" ? "text-emerald-600" : "text-red-600"}`}>
                     Signature gate: {event.signatureVerification.status.replace(/_/g, " ")} · {event.signatureVerification.toleranceSeconds}s tolerance
                   </p>
+                  {event.rateLimitRecovery && (
+                    <p className="mt-1 font-semibold text-indigo-600">
+                      Provider retry window: {event.rateLimitRecovery.retryAfterSeconds}s · resumes {formatIsoMinute(event.rateLimitRecovery.retryNotBefore)}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

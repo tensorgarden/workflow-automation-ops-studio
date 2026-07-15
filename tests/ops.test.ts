@@ -102,6 +102,25 @@ describe("webhook recovery safeguards", () => {
     expect(blocked.every(event => event.status === "quarantined" && !event.replaySafe)).toBe(true);
     expect(blocked.every(event => event.operatorAction.match(/signature|timestamp|signed/i))).toBe(true);
   });
+
+  it("honors provider Retry-After windows before replaying rate-limited calls", () => {
+    const rateLimited = demoWebhookRecovery.filter(event => event.rateLimitRecovery);
+
+    expect(rateLimited.length).toBeGreaterThan(0);
+    for (const event of rateLimited) {
+      const window = event.rateLimitRecovery!;
+      const deadLetteredAt = Date.parse(event.deadLetteredAt);
+      const retryNotBefore = Date.parse(window.retryNotBefore);
+
+      expect(event.failureReason).toMatch(/429|rate.?limit/i);
+      expect(event.errorCategory).toBe("transient");
+      expect(Number.isNaN(retryNotBefore)).toBe(false);
+      expect(retryNotBefore).toBe(deadLetteredAt + window.retryAfterSeconds * 1000);
+      expect(window.evidence).toMatch(/Retry-After/i);
+      expect(event.credentialGate).toBe("clear");
+      expect(event.signatureVerification.status).toBe("verified");
+    }
+  });
 });
 
 describe("connector blast radius", () => {

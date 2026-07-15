@@ -71,6 +71,9 @@ export interface WebhookRecoveryEvent {
     status: WebhookSignatureStatus; signedAt: string; checkedAt: string;
     toleranceSeconds: number; evidence: string;
   };
+  rateLimitRecovery?: {
+    retryAfterSeconds: number; retryNotBefore: string; evidence: string;
+  };
 }
 
 export interface CostSummary {

@@ -207,6 +207,10 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
     signatureVerification: {
       status: "verified", signedAt: "2026-06-08T15:30:01Z", checkedAt: "2026-06-08T15:30:04Z",
       toleranceSeconds: 300, evidence: "Slack signing-secret verification passed within the accepted timestamp tolerance."
+    },
+    rateLimitRecovery: {
+      retryAfterSeconds: 60, retryNotBefore: "2026-06-08T15:33:10Z",
+      evidence: "Slack HTTP 429 returned Retry-After: 60; replay stayed paused until the provider window elapsed."
     }
   }
 ];
