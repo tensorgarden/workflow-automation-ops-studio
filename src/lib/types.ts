@@ -5,6 +5,8 @@ export type CredentialGateStatus = "clear" | "reauth_required" | "expired_blocke
 export type WebhookSignatureStatus = "verified" | "invalid" | "stale_timestamp";
 export type ErrorCategory = "transient" | "permanent" | "unknown";
 export type RecoveryStatus = "ready_for_replay" | "replayed" | "quarantined";
+export type ConcurrencyStatus = "normal" | "at_capacity" | "backlogged";
+export type ConcurrencyScope = "production_webhook_and_trigger_runs";
 export type StepType = "trigger" | "transform" | "ai_analyze" | "ai_generate" | "outbound_email" | "outbound_slack" | "crm_upsert" | "sheets_append" | "approval_gate";
 
 export interface WorkspaceMember {
@@ -76,6 +78,12 @@ export interface WebhookRecoveryEvent {
   };
 }
 
+export interface ExecutionConcurrencySummary {
+  limit: number; activeExecutions: number; queuedExecutions: number;
+  oldestQueuedAt: string | null; queueDiscipline: "fifo";
+  scope: ConcurrencyScope; status: ConcurrencyStatus; operatorAction: string;
+}
+
 export interface CostSummary {
   totalRuns: number; totalCost: number; budgetLimit: number;
   costByWorkflow: { name: string; cost: number; runs: number }[];
@@ -90,5 +98,6 @@ export interface OpsSnapshot {
   approvals: ApprovalRequest[];
   auditLog: AuditLogEntry[];
   webhookRecovery: WebhookRecoveryEvent[];
+  concurrency: ExecutionConcurrencySummary;
   costSummary: CostSummary;
 }

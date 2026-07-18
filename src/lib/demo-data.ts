@@ -1,4 +1,4 @@
-import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, OpsSnapshot, StepRunResult, WebhookRecoveryEvent, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
+import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, ExecutionConcurrencySummary, OpsSnapshot, StepRunResult, WebhookRecoveryEvent, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
 
 export const demoMembers: WorkspaceMember[] = [
   { id: "m_1", name: "Jordan Park", role: "admin", initials: "JP" },
@@ -215,6 +215,17 @@ export const demoWebhookRecovery: WebhookRecoveryEvent[] = [
   }
 ];
 
+export const demoConcurrencySummary: ExecutionConcurrencySummary = {
+  limit: 8,
+  activeExecutions: 8,
+  queuedExecutions: 5,
+  oldestQueuedAt: "2026-06-08T15:29:42Z",
+  queueDiscipline: "fifo",
+  scope: "production_webhook_and_trigger_runs",
+  status: "at_capacity",
+  operatorAction: "Add worker capacity or reduce long-running execution time before the FIFO queue exceeds its response-time SLO."
+};
+
 export const demoCostSummary: CostSummary = {
   totalRuns: 42, totalCost: 3.47, budgetLimit: 20.00,
   costByWorkflow: [
@@ -233,5 +244,6 @@ export const demoSnapshot: OpsSnapshot = {
   approvals: demoApprovals,
   auditLog: demoAuditLog,
   webhookRecovery: demoWebhookRecovery,
+  concurrency: demoConcurrencySummary,
   costSummary: demoCostSummary
 };

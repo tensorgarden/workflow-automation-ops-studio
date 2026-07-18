@@ -1,5 +1,5 @@
 import {
-  demoActiveRun, demoApprovals, demoAuditLog, demoConnectors, demoCostSummary,
+  demoActiveRun, demoApprovals, demoAuditLog, demoConcurrencySummary, demoConnectors, demoCostSummary,
   demoMembers, demoWebhookRecovery, demoWorkflows
 } from "@/lib/demo-data";
 import type { ConnectorStatus, CredentialStatus, RunStatus } from "@/lib/types";
@@ -102,6 +102,19 @@ export default function Home() {
       <div className="grid gap-6 lg:grid-cols-[0.6fr_1.4fr]">
         <Card>
           <h2 className="text-xl font-bold text-slate-950">Integration Health</h2>
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-4" role="status" aria-label="Production execution concurrency">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-slate-950">Execution pressure</h3>
+              <Badge tone="amber">{demoConcurrencySummary.status.replace(/_/g, " ")}</Badge>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-slate-800">
+              {demoConcurrencySummary.activeExecutions} / {demoConcurrencySummary.limit} active · {demoConcurrencySummary.queuedExecutions} queued · FIFO
+            </p>
+            <p className="mt-1 text-xs text-slate-600">
+              {demoConcurrencySummary.oldestQueuedAt ? `Oldest queued ${formatIsoMinute(demoConcurrencySummary.oldestQueuedAt)}` : "Queue clear"}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-amber-800">{demoConcurrencySummary.operatorAction}</p>
+          </div>
           <div className="mt-4 space-y-2">
             {demoConnectors.map(c => (
               <div key={c.id} className={`flex items-center justify-between rounded-xl px-4 py-3 ${c.status === "down" ? "bg-red-50 border border-red-200" : c.status === "degraded" ? "bg-amber-50 border border-amber-200" : "bg-slate-50"}`}>

@@ -1,5 +1,6 @@
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
-import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery, demoRunHistory, demoApprovals } from "@/lib/demo-data";
+import { demoConnectors, demoWorkflows, demoActiveRun, demoCostSummary, demoWebhookRecovery, demoRunHistory, demoApprovals, demoSnapshot } from "@/lib/demo-data";
 
 describe("connector health", () => {
   it("has healthy connectors", () => {
@@ -35,6 +36,32 @@ describe("cost tracking", () => {
   it("cost breakdown covers all runs", () => {
     const totalRuns = demoCostSummary.costByWorkflow.reduce((s, w) => s + w.runs, 0);
     expect(totalRuns).toBe(demoCostSummary.totalRuns);
+  });
+});
+
+describe("execution concurrency safety", () => {
+  const concurrency = demoSnapshot.concurrency;
+
+  it("keeps active production executions within the configured limit", () => {
+    expect(concurrency.limit).toBeGreaterThan(0);
+    expect(concurrency.activeExecutions).toBeLessThanOrEqual(concurrency.limit);
+  });
+
+  it("keeps overflow executions queued with visible FIFO age", () => {
+    expect(concurrency.queuedExecutions).toBeGreaterThan(0);
+    expect(concurrency.status).toBe("at_capacity");
+    expect(Number.isNaN(Date.parse(concurrency.oldestQueuedAt!))).toBe(false);
+    expect(concurrency.queueDiscipline).toBe("fifo");
+    expect(concurrency.operatorAction).toMatch(/scale|capacity|queue|worker/i);
+  });
+
+  it("surfaces production queue pressure for operators", () => {
+    const pageSource = readFileSync(new URL("../src/app/page.tsx", import.meta.url), "utf8");
+
+    expect(pageSource).toContain("Execution pressure");
+    expect(pageSource).toContain("demoConcurrencySummary.activeExecutions");
+    expect(pageSource).toContain("demoConcurrencySummary.queuedExecutions");
+    expect(pageSource).toContain("demoConcurrencySummary.operatorAction");
   });
 });
 
