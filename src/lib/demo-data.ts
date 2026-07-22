@@ -1,4 +1,4 @@
-import type { ApprovalRequest, AuditLogEntry, Connector, CostSummary, ExecutionConcurrencySummary, OpsSnapshot, StepRunResult, WebhookRecoveryEvent, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
+import type { ApprovalRequest, AuditLogEntry, Connector, ConnectorCircuitBreaker, CostSummary, ExecutionConcurrencySummary, OpsSnapshot, StepRunResult, WebhookRecoveryEvent, WorkflowDefinition, WorkflowRun, WorkspaceMember } from "./types";
 
 export const demoMembers: WorkspaceMember[] = [
   { id: "m_1", name: "Jordan Park", role: "admin", initials: "JP" },
@@ -226,6 +226,20 @@ export const demoConcurrencySummary: ExecutionConcurrencySummary = {
   operatorAction: "Add worker capacity or reduce long-running execution time before the FIFO queue exceeds its response-time SLO."
 };
 
+export const demoCircuitBreakers: ConnectorCircuitBreaker[] = [
+  {
+    id: "cb_crm_api",
+    connectorId: "conn_crm",
+    state: "open",
+    failureThreshold: 3,
+    recentFailures: 4,
+    openedAt: "2026-06-08T15:21:12Z",
+    probeAfter: "2026-06-08T15:26:12Z",
+    blockedExecutionCount: 6,
+    operatorAction: "Keep HubSpot calls failed fast until the five-minute recovery window ends, then allow one health probe before resuming queued work."
+  }
+];
+
 export const demoCostSummary: CostSummary = {
   totalRuns: 42, totalCost: 3.47, budgetLimit: 20.00,
   costByWorkflow: [
@@ -245,5 +259,6 @@ export const demoSnapshot: OpsSnapshot = {
   auditLog: demoAuditLog,
   webhookRecovery: demoWebhookRecovery,
   concurrency: demoConcurrencySummary,
+  circuitBreakers: demoCircuitBreakers,
   costSummary: demoCostSummary
 };

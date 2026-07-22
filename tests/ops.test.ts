@@ -65,6 +65,44 @@ describe("execution concurrency safety", () => {
   });
 });
 
+describe("downstream circuit breaker safety", () => {
+  const openCircuits = demoSnapshot.circuitBreakers.filter(circuit => circuit.state === "open");
+
+  it("opens at the failure threshold and schedules a bounded recovery probe", () => {
+    expect(openCircuits.length).toBeGreaterThan(0);
+
+    for (const circuit of openCircuits) {
+      const openedAt = Date.parse(circuit.openedAt!);
+      const probeAfter = Date.parse(circuit.probeAfter!);
+
+      expect(circuit.recentFailures).toBeGreaterThanOrEqual(circuit.failureThreshold);
+      expect(Number.isNaN(openedAt)).toBe(false);
+      expect(Number.isNaN(probeAfter)).toBe(false);
+      expect(probeAfter).toBeGreaterThan(openedAt);
+      expect(circuit.blockedExecutionCount).toBeGreaterThan(0);
+      expect(circuit.operatorAction).toMatch(/failed fast|probe|recovery|resume/i);
+      expect(demoConnectors.some(connector => connector.id === circuit.connectorId)).toBe(true);
+    }
+  });
+
+  it("keeps recovery events quarantined while their downstream circuit is open", () => {
+    for (const circuit of openCircuits) {
+      const affectedEvents = demoWebhookRecovery.filter(event => event.connectorId === circuit.connectorId);
+
+      expect(affectedEvents.length).toBeGreaterThan(0);
+      expect(affectedEvents.every(event => event.status === "quarantined" && !event.replaySafe)).toBe(true);
+    }
+  });
+
+  it("surfaces failed-fast volume and recovery timing for operators", () => {
+    const pageSource = readFileSync(new URL("../src/app/page.tsx", import.meta.url), "utf8");
+
+    expect(pageSource).toContain("Retry storm protection");
+    expect(pageSource).toContain("circuit.blockedExecutionCount");
+    expect(pageSource).toContain("circuit.probeAfter");
+  });
+});
+
 describe("webhook recovery safeguards", () => {
   it("ties dead-lettered payloads to workflow and trace context", () => {
     const workflowIds = new Set(demoWorkflows.map(w => w.id));

@@ -1,5 +1,5 @@
 import {
-  demoActiveRun, demoApprovals, demoAuditLog, demoConcurrencySummary, demoConnectors, demoCostSummary,
+  demoActiveRun, demoApprovals, demoAuditLog, demoCircuitBreakers, demoConcurrencySummary, demoConnectors, demoCostSummary,
   demoMembers, demoWebhookRecovery, demoWorkflows
 } from "@/lib/demo-data";
 import type { ConnectorStatus, CredentialStatus, RunStatus } from "@/lib/types";
@@ -62,6 +62,7 @@ export default function Home() {
     const hoursUntilExpiry = (Date.parse(c.auth.expiresAt) - Date.parse(c.auth.checkedAt)) / (60 * 60 * 1000);
     return c.auth.status !== "expired" && hoursUntilExpiry <= c.auth.renewalWindowHours;
   }).length;
+  const openCircuitBreakers = demoCircuitBreakers.filter(circuit => circuit.state === "open");
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-5 py-8 md:px-8 lg:px-10 bg-slate-50">
@@ -115,6 +116,30 @@ export default function Home() {
             </p>
             <p className="mt-2 text-xs leading-5 text-amber-800">{demoConcurrencySummary.operatorAction}</p>
           </div>
+          {openCircuitBreakers.length > 0 && (
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50/70 p-4" role="alert" aria-label="Open downstream circuit breakers">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-slate-950">Retry storm protection</h3>
+                <Badge tone="red">{openCircuitBreakers.length} open</Badge>
+              </div>
+              <div className="mt-3 space-y-2">
+                {openCircuitBreakers.map(circuit => {
+                  const connector = demoConnectors.find(item => item.id === circuit.connectorId);
+                  return (
+                    <div key={circuit.id} className="rounded-xl bg-white p-3 text-xs text-slate-600">
+                      <p className="font-semibold text-slate-900">
+                        {connector?.name ?? circuit.connectorId}: {circuit.recentFailures} recent failures / threshold {circuit.failureThreshold}
+                      </p>
+                      <p className="mt-1 text-red-600">
+                        {circuit.blockedExecutionCount} executions failed fast · {circuit.probeAfter ? `probe after ${formatIsoMinute(circuit.probeAfter)}` : "manual reset required"}
+                      </p>
+                      <p className="mt-1 leading-5">{circuit.operatorAction}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="mt-4 space-y-2">
             {demoConnectors.map(c => (
               <div key={c.id} className={`flex items-center justify-between rounded-xl px-4 py-3 ${c.status === "down" ? "bg-red-50 border border-red-200" : c.status === "degraded" ? "bg-amber-50 border border-amber-200" : "bg-slate-50"}`}>

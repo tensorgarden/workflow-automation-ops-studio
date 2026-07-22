@@ -7,6 +7,7 @@ export type ErrorCategory = "transient" | "permanent" | "unknown";
 export type RecoveryStatus = "ready_for_replay" | "replayed" | "quarantined";
 export type ConcurrencyStatus = "normal" | "at_capacity" | "backlogged";
 export type ConcurrencyScope = "production_webhook_and_trigger_runs";
+export type CircuitBreakerState = "closed" | "open" | "half_open";
 export type StepType = "trigger" | "transform" | "ai_analyze" | "ai_generate" | "outbound_email" | "outbound_slack" | "crm_upsert" | "sheets_append" | "approval_gate";
 
 export interface WorkspaceMember {
@@ -84,6 +85,12 @@ export interface ExecutionConcurrencySummary {
   scope: ConcurrencyScope; status: ConcurrencyStatus; operatorAction: string;
 }
 
+export interface ConnectorCircuitBreaker {
+  id: string; connectorId: string; state: CircuitBreakerState;
+  failureThreshold: number; recentFailures: number; openedAt: string | null;
+  probeAfter: string | null; blockedExecutionCount: number; operatorAction: string;
+}
+
 export interface CostSummary {
   totalRuns: number; totalCost: number; budgetLimit: number;
   costByWorkflow: { name: string; cost: number; runs: number }[];
@@ -99,5 +106,6 @@ export interface OpsSnapshot {
   auditLog: AuditLogEntry[];
   webhookRecovery: WebhookRecoveryEvent[];
   concurrency: ExecutionConcurrencySummary;
+  circuitBreakers: ConnectorCircuitBreaker[];
   costSummary: CostSummary;
 }
